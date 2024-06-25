@@ -220,7 +220,7 @@ df.loc[ (df['LoyaltyProgramMember'] == "No") & (
 df.loc[ (df['LoyaltyProgramMember'] == "No") & (
             df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_unloyal"
 
-#
+# NEW_CUSTOMER_PURPOSE_OF_TRAVEL x Gender
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_male"
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_female"
 
@@ -250,49 +250,8 @@ df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['G
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_female"
 
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_female"
 
-# NEW_CUSTOMER_PURPOSE_OF_TRAVEL x TravelClass
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_loyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_loyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_loyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_loyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_loyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_loyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_loyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_loyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_loyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_loyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_loyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_loyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_loyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_loyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_loyal_business"
-
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_unloyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_unloyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "business_unloyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_unloyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_unloyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "tourism_unloyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_unloyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_unloyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "research_unloyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_unloyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_unloyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "colonization_unloyal_business"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['TravelClass'] == "Economy"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_unloyal_economy"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['TravelClass'] == "Luxury"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_unloyal_luxury"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['TravelClass'] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'] = "other_unloyal_business"
-df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS'].value_counts()
 # Adım 3:  Encoding işlemlerini gerçekleştiriniz.
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
 
