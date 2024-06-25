@@ -11,6 +11,7 @@ from sklearn.tree import DecisionTreeRegressor
 from sklearn.model_selection import GridSearchCV, cross_validate, RandomizedSearchCV, validation_curve
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
 import sklearn.metrics as mt
+import re
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', 200)
 pd.set_option('display.width', 500)
@@ -39,52 +40,50 @@ from Func import *
 
 # Veri Setini okuma
 df = pd.read_csv("datasets/interstellar_travel.csv")
-df = df.sample(n=10000, random_state=17)
+df = df.sample(n=50000, random_state=17)
 
-# Değişken İsimlerini Düzeltme
-import re
+# Genel Resim
+check_df(df)
+
+# Değişken isimlerini düzeltme
 df = df.rename(columns = lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
 
 # Tarih değişkenlerini datetime formatına getirme
 df["BookingDate"] = pd.to_datetime(df["BookingDate"], format="%Y-%m-%d")
 df["DepartureDate"] = pd.to_datetime(df["DepartureDate"], format="%Y-%m-%d")
 
-# Genel Resim
-check_df(df)
-
 # Price'ı 0'dan küçük olan satırlar var.
 df[0 > df['PriceGalacticCredits']].count()
-df["PriceGalacticCredits"] = np.abs(df["PriceGalacticCredits"])
-######### veya
 df=df[df['PriceGalacticCredits'] > 0]
 
-# DistancetoDestination(Light-Years),DurationofStay(EarthDays) min değerleri 0'dı.
-df[df["DistancetoDestinationLightYears"]==0] # ??
-df["DurationofStayEarthDays"] = df["DurationofStayEarthDays"].apply(lambda x: x + 1)
+
 
 
 ##############################################################
-
+# Kategorik ve numerik değişkenleri çekme
 cat_cols, num_cols, cat_but_car= grab_col_names(df)
 # Adım 3:  Numerik ve kategorik değişkenlerin analizini yapınız.
+
 # Kategorik değişkenler için
+
 for col in cat_cols:
     cat_summary(df,col,True)
 
 # Numerik değişkenler için
+num_cols=[col for col in num_cols if col not in ["BookingDate","DepartureDate"]]
+
 for col in num_cols:
     num_summary(df,col,plot=True)
+
 # Adım 4: Hedef değişken analizi yapınız.
 
 for col in cat_cols:
     target_summary_with_cat(df,"CustomerSatisfactionScore", col, plot=True)
 
 # Bağımlı değişkenin incelenmesi
-sns.displot(df["CustomerSatisfactionScore"],kde=True,bins=22)
+sns.displot(df["CustomerSatisfactionScore"],kde=True,bins=25)
 plt.show()
-# Bağımlı değişkenin logaritmasının incelenmesi (normalleştirmek için)
-sns.displot(np.log1p(df['CustomerSatisfactionScore']),kde=True,bins=22)
-plt.show()
+
 
 # Adım 5: Korelasyon analizi yapınız
 corr = df[num_cols].corr(method="spearman")
@@ -112,7 +111,9 @@ df.isnull().sum()
 df["SpecialRequests"].fillna("None",inplace=True)
 
 # Yeni Değişkenler Oluşturma
-#df["PriceGalacticCredits"] = np.abs(df["PriceGalacticCredits"])
+
+# Kaldığı gece üzerinden olan verileri kaldığı gün olarak değiştirme işlemi.
+df["DurationofStayEarthDays"] = df["DurationofStayEarthDays"].apply(lambda x: x + 1)
 
 df["Total_days_booking_to_departure"] = df["DepartureDate"]- df["BookingDate"]
 df["Total_days_booking_to_departure"] = df["Total_days_booking_to_departure"].dt.days
@@ -133,8 +134,6 @@ df.loc[(df['Age'] >= 25) & (df['Age'] < 40), 'NEW_AGE_CAT'] = "mature"
 df.loc[(df['Age'] >= 40) & (df['Age'] < 65), 'NEW_AGE_CAT'] = "middle_age"
 df.loc[(df['Age'] >= 65) , 'NEW_AGE_CAT'] = "senior"
 
-df["Age"] = pd.cut(df["Age"],bins=[-np.inf,15,25,40,65,np.max(df["Age"])], labels=["children","young","mature","middle_age","senior"])
-df["Age"] = df["Age"].astype("O")
 
 # Age x Gender
 df.loc[(df['NEW_AGE_CAT'] == "children") & (df['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "children_male"
@@ -151,10 +150,10 @@ df.loc[(df['NEW_AGE_CAT'] == "middle_age") &
 df.loc[(df['NEW_AGE_CAT'] == "middle_age") &
        (df['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "middle_age_female"
 
-df.loc[(df['NEW_AGE_CAT'] == "old_age") &
-       (df['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "old_age_male"
-df.loc[(df['NEW_AGE_CAT'] == "old_age") &
-       (df['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "old_age_female"
+df.loc[(df['NEW_AGE_CAT'] == "senior") &
+       (df['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "senior_male"
+df.loc[(df['NEW_AGE_CAT'] == "senior") &
+       (df['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "senior_female"
 
 # Gender x Occupation
 df.loc[(df['Gender'] == "Male") &
@@ -221,6 +220,7 @@ df.loc[ (df['LoyaltyProgramMember'] == "No") & (
 df.loc[ (df['LoyaltyProgramMember'] == "No") & (
             df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_unloyal"
 
+#
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_male"
 df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_female"
 
@@ -307,7 +307,7 @@ df[num_cols] = ss.fit_transform(df[num_cols])
 # Adım 4: Model oluşturunuz.
 # Bağımsız değişkenler ve hedef değişken
 y = df["CustomerSatisfactionScore"]
-X = df.drop(["CustomerSatisfactionScore","StarSystem","BookingDate","DepartureDate","NEW_CUSTOMER_PURPOSE_OF_TRAVEL_CLASS"], axis=1 )
+X = df.drop(["CustomerSatisfactionScore","StarSystem","BookingDate","DepartureDate"], axis=1 )
 X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2,random_state=22)
 
 
@@ -326,13 +326,13 @@ models = [#('LR', LinearRegression()),
           ("LightGBM", LGBMRegressor(verbosity=-1)),
           ("CatBoost", CatBoostRegressor(verbose=False))]
 
-X.isnull().sum()
+
 # Her bir model için performansı değerlendirme
 for name, regressor in models:
     rmse = np.mean(np.sqrt(-cross_val_score(regressor, X, y, cv=5, scoring="neg_mean_squared_error")))
     print(f"RMSE: {round(rmse, 4)} ({name}) ")
 
-#
+
 ######################################################
 #  Automated Hyperparameter Optimization
 ######################################################
@@ -380,12 +380,11 @@ for name, regressor, params in regressors:
     print(f"{name} best params: {gs_best.best_params_}", end="\n\n")
 
     best_models[name] = final_model
+
 ###########################################################################
 lightgbm_model = LGBMRegressor(verbosity=-1).fit(X_train,y_train)
 rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_model, X,y, cv=10, scoring="neg_mean_squared_error")))
 print(f"Lightgbm Model RMSE: {round(rmse, 4)} ")
-
-
 
 
 y_pred = lightgbm_model.predict(X_test)
@@ -404,40 +403,38 @@ rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_final, X_test, y_test, cv=10, s
 print(f"Lightgbm Final Model RMSE: {round(rmse, 4)} ")
 ###########################################################################
 def plot_importance(model, features, num=20, save=False):
-    # Ensure the model has the feature_importances_ attribute
+
     if not hasattr(model, 'feature_importances_'):
         raise AttributeError(f"The model does not have feature importances. Ensure that the model is fitted and has the attribute 'feature_importances_'.")
 
-    # Extract feature importances
     feature_imp = pd.DataFrame({'Value': model.feature_importances_, 'Feature': features.columns})
 
-    # If num exceeds the number of features, plot all features
     if num > len(features.columns):
         num = len(features.columns)
 
-    # Create the plot
     plt.figure(figsize=(10, 10))
     sns.set(font_scale=1)
     sns.barplot(x="Value", y="Feature", data=feature_imp.sort_values(by="Value", ascending=False).iloc[:num])
     plt.title('Feature Importances')
     plt.tight_layout()
 
-    # Save the plot if specified
     if save:
         plt.savefig('importances.png')
-
-    # Show the plot
     plt.show()
 
 plot_importance(lightgbm_model, X_train)
 
 #################################################
+# Hata Grafiği Oluşturma
 
 hatalar = y_test - y_pred
 
-# Hata çizimi oluşturma
 plt.scatter(y_pred, hatalar,color="Red")
 plt.xlabel('Tahmin Edilen Değerler')
 plt.ylabel('Hatalar')
 plt.title('Hata Çizimi')
+plt.axhline(0,color="Blue",linestyle="--")
 plt.show()
+########
+
+

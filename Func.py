@@ -83,6 +83,7 @@ def cat_summary(dataframe, col_name, plot=False):
     print("##########################################")
     if plot:
         sns.countplot(x=dataframe[col_name], data=dataframe)
+        plt.xticks(rotation=45)
         plt.show(block=True)
 
 def num_summary(dataframe, numerical_col, plot=False):
@@ -93,12 +94,13 @@ def num_summary(dataframe, numerical_col, plot=False):
         dataframe[numerical_col].hist(bins=20)
         plt.xlabel(numerical_col)
         plt.title(numerical_col)
+        plt.xticks(rotation=45)
         plt.show(block=True)
 
 def target_summary_with_cat(dataframe,target,categorical_col, plot=False):
     print(pd.DataFrame({"TARGET_MEAN": dataframe.groupby(categorical_col)[target].mean()}))
     if plot:
-        sns.boxplot(data=dataframe, x=categorical_col,y=target)
+        sns.violinplot(data=dataframe, x=categorical_col,y=target)
         plt.xticks(rotation=45)
         plt.show(block=True)
 
