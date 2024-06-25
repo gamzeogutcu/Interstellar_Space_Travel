@@ -38,7 +38,7 @@ from Func import *
 # Month: Month of travel.
 
 # Veri Setini okuma
-df = pd.read_csv("Datasets/interstellar_travel.csv")
+df = pd.read_csv("datasets/interstellar_travel.csv")
 df = df.sample(n=10000, random_state=17)
 
 # Değişken İsimlerini Düzeltme
