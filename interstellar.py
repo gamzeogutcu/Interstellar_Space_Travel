@@ -62,7 +62,7 @@ df=df[df['PriceGalacticCredits'] > 0]
 df[df["DistancetoDestinationLightYears"]==0] # ??
 df["DurationofStayEarthDays"] = df["DurationofStayEarthDays"].apply(lambda x: x + 1)
 
-# df[(df["Age"]==0) &  (df["NumberofCompanions"]==0)]
+
 ##############################################################
 
 cat_cols, num_cols, cat_but_car= grab_col_names(df)
