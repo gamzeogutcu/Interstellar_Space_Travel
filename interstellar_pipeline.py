@@ -1,16 +1,17 @@
 import joblib
+import numpy as np
 from catboost import CatBoostRegressor
 from lightgbm import LGBMRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, VotingRegressor
 from sklearn.tree import DecisionTreeRegressor
-from sklearn.model_selection import GridSearchCV, cross_validate, RandomizedSearchCV, validation_curve
+from sklearn.model_selection import GridSearchCV, cross_validate, RandomizedSearchCV, validation_curve, cross_val_score
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
 from xgboost import XGBRegressor
-
 from Func import *
 import re
 
 def interstellar_data_prep(dataframe):
+
     # Değişken isimlerini düzeltme
     dataframe = dataframe.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
 
@@ -29,7 +30,7 @@ def interstellar_data_prep(dataframe):
         if col != "CustomerSatisfactionScore":
             replace_with_thresholds(dataframe, col)
 
-    #eksik değerleri doldurma
+    # Eksik değerleri doldurma
     dataframe["SpecialRequests"].fillna("None", inplace=True)
 
     # Yeni Değişkenler Oluşturma
@@ -215,7 +216,7 @@ def interstellar_data_prep(dataframe):
     return X,y
 
 # Base Models
-def base_models(X,y,scoring="neg_root_mean_squared_error"):
+def base_models(X,y):
     print("Base Models...")
     regressors = [  # ('LR', LinearRegression()),
         # ("Ridge", Ridge()),
@@ -227,13 +228,12 @@ def base_models(X,y,scoring="neg_root_mean_squared_error"):
         # ('SVR', SVR()),
         # ('GBM', GradientBoostingRegressor()),
         # ("XGBoost", XGBRegressor(objective='reg:squarederror')),
-        ("LightGBM", LGBMRegressor(verbosity=-1))]
-        #("CatBoost", CatBoostRegressor(verbose=False))]
+        ("LightGBM", LGBMRegressor(verbosity=-1)),
+        ("CatBoost", CatBoostRegressor(verbose=False))]
 
-
-    for name,regressor in regressors:
-        cv_results=cross_validate(regressor,X,y,cv=5,scoring=scoring)
-        print(f"{scoring}: {round(-cv_results['test_score'].mean(),4)} ({name})")
+    for name, regressor in regressors:
+        rmse = np.mean(np.sqrt(-cross_val_score(regressor, X, y, cv=5, scoring="neg_mean_squared_error")))
+        print(f"RMSE: {round(rmse, 4)} ({name}) ")
 
 
 # Hyperparameter Optimization
@@ -266,37 +266,39 @@ catboost_params = {"learning_rate": [0.1, 0.5],
 regressors=[#('KNN',KNeighborsRegressor(),knn_params),
              #("CART",DecisionTreeRegressor(),cart_params),
              #("RF",RandomForestRegressor(),rf_params),
-             ('XGBoost',XGBRegressor(use_label_encoder=False,eval_metric='logloss'),xgboost_params),
-             ('LightGBM',LGBMRegressor(verbose_eval = False,verbose=-1),lightgbm_params),
-             ('CatBoost',CatBoostRegressor(verbose=False))]
+             ("XGBoost", XGBRegressor(objective='reg:squarederror'),xgboost_params),
+             ('LightGBM',LGBMRegressor(verbosity=-1),lightgbm_params),
+             ('CatBoost',CatBoostRegressor(verbose=False),catboost_params)]
 
-def hyperparameter_optimization(X,y,cv=5,scoring="neg_root_mean_squared_error"):
+
+def hyperparameter_optimization(X, y, cv=5):
     print("Hyperparameter Optimization")
-    best_models={}
-    for name ,regressor,params in regressors:
+    best_models = {}
+    for name, regressor, params in regressors:
         print(f"########## {name} ##########")
-        cv_results=cross_validate(regressor,X,y,cv=cv,scoring=scoring)
-        print(f"{scoring}  (Before): {round(-cv_results['test_score'].mean(),4)}")
+        rmse = np.mean(np.sqrt(-cross_val_score(regressor, X, y, cv=cv, scoring="neg_mean_squared_error")))
+        print(f"RMSE  (Before): {round(rmse, 4)} ({name}) ")
 
-        gs_best=GridSearchCV(regressor,params,cv=cv,n_jobs=-1,verbose=False).fit(X,y)
-        final_model=regressor.set_params(**gs_best.best_params_)
+        gs_best = GridSearchCV(regressor, params, cv=cv, n_jobs=-1, verbose=False).fit(X, y)
+        final_model = regressor.set_params(**gs_best.best_params_)
 
-        cv_results = cross_validate(final_model,X, y, cv=cv, scoring=scoring)
-        print(f"{scoring}  (After): {round(-cv_results['test_score'].mean(), 4)}")
-        print(f"{name}  best params: {gs_best.best_params_}",end="\n\n")
-        best_models[name]=final_model
+        rmse = np.mean(np.sqrt(-cross_val_score(final_model, X, y, cv=cv, scoring="neg_mean_squared_error")))
+        print(f"RMSE  (After): {round(rmse, 4)} ({name}) ")
+        print(f"{name} best params: {gs_best.best_params_}", end="\n\n")
+        best_models[name] = final_model
+
     return best_models
 
 
 # Stacking & Ensemble Learning
+# Stacking & Ensemble Learning
 def voting_regressor(best_models,X,y):
-    print("Voting Classifier...")
+    print("Voting Regressor...")
     voting_rgs=VotingRegressor(estimators=[('CatBoost',best_models["CatBoost"]),
                                             ('LightGBM',best_models["LightGBM"]),
-                                            ('XGBoost',best_models["XGBoost"])],
-                                voting='soft').fit(X,y)
-    cv_results=cross_validate(voting_rgs,X,y,cv=3,scoring=["neg_root_mean_squared_error"])
-    print(f"RMSE: {round(-cv_results['test_score'].mean(), 4)}")
+                                            ('XGBoost',best_models["XGBoost"])]).fit(X,y)
+    rmse = np.mean(np.sqrt(-cross_val_score(voting_rgs, X, y, cv=5, scoring="neg_mean_squared_error")))
+    print(f"RMSE: {round(rmse, 4)}")
     return voting_rgs
 
 
@@ -308,9 +310,9 @@ def main():
     X,y=interstellar_data_prep(dataframe)
     base_models(X,y)
     best_models=hyperparameter_optimization(X,y)
-    voting_clf = voting_regressor(best_models, X, y)
-    joblib.dump(voting_clf, "voting_clf.pkl")
-    return voting_clf
+    voting_rgs = voting_regressor(best_models, X, y)
+    joblib.dump(voting_rgs, "voting_rgs.pkl")
+    return voting_rgs
 
 
 # Bir python dosyasını çalıştıracak olan nihai bölümdür.
