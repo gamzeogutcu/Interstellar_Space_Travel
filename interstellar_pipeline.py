@@ -227,8 +227,8 @@ def base_models(X,y,scoring="neg_root_mean_squared_error"):
         # ('SVR', SVR()),
         # ('GBM', GradientBoostingRegressor()),
         # ("XGBoost", XGBRegressor(objective='reg:squarederror')),
-        ("LightGBM", LGBMRegressor(verbosity=-1)),
-        ("CatBoost", CatBoostRegressor(verbose=False))]
+        ("LightGBM", LGBMRegressor(verbosity=-1))]
+        #("CatBoost", CatBoostRegressor(verbose=False))]
 
 
     for name,regressor in regressors:
@@ -289,10 +289,11 @@ def hyperparameter_optimization(X,y,cv=5,scoring="neg_root_mean_squared_error"):
 
 
 # Stacking & Ensemble Learning
-def voting_classifier(best_models,X,y):
+def voting_regressor(best_models,X,y):
     print("Voting Classifier...")
     voting_rgs=VotingRegressor(estimators=[('CatBoost',best_models["CatBoost"]),
-                                            ('LightGBM',best_models["LightGBM"]),()],
+                                            ('LightGBM',best_models["LightGBM"]),
+                                            ('XGBoost',best_models["XGBoost"])],
                                 voting='soft').fit(X,y)
     cv_results=cross_validate(voting_rgs,X,y,cv=3,scoring=["neg_root_mean_squared_error"])
     print(f"RMSE: {round(-cv_results['test_score'].mean(), 4)}")
@@ -307,7 +308,7 @@ def main():
     X,y=interstellar_data_prep(dataframe)
     base_models(X,y)
     best_models=hyperparameter_optimization(X,y)
-    voting_clf = voting_classifier(best_models, X, y)
+    voting_clf = voting_regressor(best_models, X, y)
     joblib.dump(voting_clf, "voting_clf.pkl")
     return voting_clf
 
