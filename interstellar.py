@@ -12,6 +12,7 @@ from sklearn.model_selection import GridSearchCV, cross_validate, RandomizedSear
 from sklearn.preprocessing import MinMaxScaler, LabelEncoder, StandardScaler, RobustScaler
 import sklearn.metrics as mt
 import re
+
 pd.set_option('display.max_columns', None)
 pd.set_option('display.max_rows', 200)
 pd.set_option('display.width', 500)
@@ -46,7 +47,7 @@ df = df.sample(n=50000, random_state=17)
 check_df(df)
 
 # Değişken isimlerini düzeltme
-df = df.rename(columns = lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+df = df.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
 
 # Tarih değişkenlerini datetime formatına getirme
 df["BookingDate"] = pd.to_datetime(df["BookingDate"], format="%Y-%m-%d")
@@ -54,36 +55,32 @@ df["DepartureDate"] = pd.to_datetime(df["DepartureDate"], format="%Y-%m-%d")
 
 # Price'ı 0'dan küçük olan satırlar var.
 df[0 > df['PriceGalacticCredits']].count()
-df=df[df['PriceGalacticCredits'] > 0]
-
-
-
+df = df[df['PriceGalacticCredits'] > 0]
 
 ##############################################################
 # Kategorik ve numerik değişkenleri çekme
-cat_cols, num_cols, cat_but_car= grab_col_names(df)
+cat_cols, num_cols, cat_but_car = grab_col_names(df)
 # Adım 3:  Numerik ve kategorik değişkenlerin analizini yapınız.
 
 # Kategorik değişkenler için
 
 for col in cat_cols:
-    cat_summary(df,col,True)
+    cat_summary(df, col, True)
 
 # Numerik değişkenler için
-num_cols=[col for col in num_cols if col not in ["BookingDate","DepartureDate"]]
+num_cols = [col for col in num_cols if col not in ["BookingDate", "DepartureDate"]]
 
 for col in num_cols:
-    num_summary(df,col,plot=True)
+    num_summary(df, col, plot=True)
 
 # Adım 4: Hedef değişken analizi yapınız.
 
 for col in cat_cols:
-    target_summary_with_cat(df,"CustomerSatisfactionScore", col, plot=True)
+    target_summary_with_cat(df, "CustomerSatisfactionScore", col, plot=True)
 
 # Bağımlı değişkenin incelenmesi
-sns.displot(df["CustomerSatisfactionScore"],kde=True,bins=25)
+sns.displot(df["CustomerSatisfactionScore"], kde=True, bins=25)
 plt.show()
-
 
 # Adım 5: Korelasyon analizi yapınız
 corr = df[num_cols].corr(method="spearman")
@@ -108,20 +105,19 @@ for col in num_cols:
 df.isnull().sum()
 
 # Eksik verileri doldurma
-df["SpecialRequests"].fillna("None",inplace=True)
+df["SpecialRequests"].fillna("None", inplace=True)
 
 # Yeni Değişkenler Oluşturma
 
 # Kaldığı gece üzerinden olan verileri kaldığı gün olarak değiştirme işlemi.
 df["DurationofStayEarthDays"] = df["DurationofStayEarthDays"].apply(lambda x: x + 1)
 
-df["Total_days_booking_to_departure"] = df["DepartureDate"]- df["BookingDate"]
-df["Total_days_booking_to_departure"] = df["Total_days_booking_to_departure"].dt.days
+df["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"] = df["DepartureDate"] - df["BookingDate"]
+df["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"] = df["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"].dt.days
 
-df["cost_price_to_distance"] = df["PriceGalacticCredits"] / df["DistancetoDestinationLightYears"].replace(0,0.01)
-df["Cost_price_to_stay"] = df["PriceGalacticCredits"] / df["DurationofStayEarthDays"].replace(0,1)
-df["Cost_price_to_companions"] = df["PriceGalacticCredits"] / df["NumberofCompanions"].replace(0,1)
-
+df["NEW_COST_PRICE_TO_DISTANCE"] = df["PriceGalacticCredits"] / df["DistancetoDestinationLightYears"].replace(0, 0.01)
+df["NEW_COST_PRICE_TO_STAY"] = df["PriceGalacticCredits"] / df["DurationofStayEarthDays"].replace(0, 1)
+df["NEW_COST_PRICE_TO_COMPANIONS"] = df["PriceGalacticCredits"] / df["NumberofCompanions"].replace(0, 1)
 
 df["DepartureYear"] = df["DepartureDate"].dt.year
 df["BookingYear"] = df["BookingDate"].dt.year
@@ -132,8 +128,7 @@ df.loc[(df['Age'] < 15), 'NEW_AGE_CAT'] = "children"
 df.loc[(df['Age'] >= 15) & (df['Age'] < 25), 'NEW_AGE_CAT'] = "young"
 df.loc[(df['Age'] >= 25) & (df['Age'] < 40), 'NEW_AGE_CAT'] = "mature"
 df.loc[(df['Age'] >= 40) & (df['Age'] < 65), 'NEW_AGE_CAT'] = "middle_age"
-df.loc[(df['Age'] >= 65) , 'NEW_AGE_CAT'] = "senior"
-
+df.loc[(df['Age'] >= 65), 'NEW_AGE_CAT'] = "senior"
 
 # Age x Gender
 df.loc[(df['NEW_AGE_CAT'] == "children") & (df['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "children_male"
@@ -157,100 +152,124 @@ df.loc[(df['NEW_AGE_CAT'] == "senior") &
 
 # Gender x Occupation
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "male_colonist"
+       (df['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "male_colonist"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "female_colonist"
+       (df['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "female_colonist"
 
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "male_tourist"
+       (df['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "male_tourist"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "female_tourist"
+       (df['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "female_tourist"
 
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "male_businessperson"
+       (df['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "male_businessperson"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "female_businessperson"
+       (df['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "female_businessperson"
 
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "male_explorer"
+       (df['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "male_explorer"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "female_explorer"
+       (df['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "female_explorer"
 
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "male_scientist"
+       (df['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "male_scientist"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "female_scientist"
+       (df['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "female_scientist"
 
 df.loc[(df['Gender'] == "Male") &
- (df['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "male_other"
+       (df['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "male_other"
 df.loc[(df['Gender'] == "Female") &
- (df['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "female_other"
+       (df['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "female_other"
+
+# TravelClass x TransportationType
+df['NEW_CLASS_TRANSPORTATION'] = df['TravelClass'].str.cat(df['TransportationType'], sep='_')
+df['NEW_CLASS_TRANSPORTATION'] = df['NEW_CLASS_TRANSPORTATION'].str.lower()
+df['NEW_CLASS_TRANSPORTATION'] = df['NEW_CLASS_TRANSPORTATION'].str.replace(" ", "_")
 
 # LoyaltyProgramMember x Gender
 df.loc[(df['Gender'] == "Male") &
- (df['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "male_loyal"
+       (df['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "male_loyal"
 df.loc[(df['Gender'] == "Female") &
- (df['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "female_loyal"
+       (df['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "female_loyal"
 
 df.loc[(df['Gender'] == "Male") &
- (df['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "male_unloyal"
+       (df['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "male_unloyal"
 df.loc[(df['Gender'] == "Female") &
- (df['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "female_unloyal"
+       (df['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "female_unloyal"
 
 # LoyaltyProgramMember x PurposeofTravel
-df.loc[ (df['LoyaltyProgramMember'] == "Yes") & (
-            df["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_loyal"
-df.loc[ (df['LoyaltyProgramMember'] == "Yes") & (
-            df["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_loyal"
-df.loc[ (df['LoyaltyProgramMember'] == "Yes") & (
-            df["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_loyal"
-df.loc[ (df['LoyaltyProgramMember'] == "Yes") & (
-            df["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_loyal"
-df.loc[ (df['LoyaltyProgramMember'] == "Yes") & (
-            df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_loyal"
+df.loc[(df['LoyaltyProgramMember'] == "Yes") & (
+        df["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_loyal"
+df.loc[(df['LoyaltyProgramMember'] == "Yes") & (
+        df["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_loyal"
+df.loc[(df['LoyaltyProgramMember'] == "Yes") & (
+        df["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_loyal"
+df.loc[(df['LoyaltyProgramMember'] == "Yes") & (
+        df["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_loyal"
+df.loc[(df['LoyaltyProgramMember'] == "Yes") & (
+        df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_loyal"
 
-df.loc[ (df['LoyaltyProgramMember'] == "No") & (
-            df["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_unloyal"
-df.loc[ (df['LoyaltyProgramMember'] == "No") & (
-            df["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_unloyal"
-df.loc[ (df['LoyaltyProgramMember'] == "No") & (
-            df["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_unloyal"
-df.loc[ (df['LoyaltyProgramMember'] == "No") & (
-            df["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_unloyal"
-df.loc[ (df['LoyaltyProgramMember'] == "No") & (
-            df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_unloyal"
+df.loc[(df['LoyaltyProgramMember'] == "No") & (
+        df["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_unloyal"
+df.loc[(df['LoyaltyProgramMember'] == "No") & (
+        df["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_unloyal"
+df.loc[(df['LoyaltyProgramMember'] == "No") & (
+        df["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_unloyal"
+df.loc[(df['LoyaltyProgramMember'] == "No") & (
+        df["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_unloyal"
+df.loc[(df['LoyaltyProgramMember'] == "No") & (
+        df["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_unloyal"
 
 # NEW_CUSTOMER_PURPOSE_OF_TRAVEL x Gender
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_female"
 
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_female"
 
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_female"
-
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_male"
-df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_female"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (
+            df['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_male"
+df.loc[(df['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (
+            df['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_female"
 
 # Adım 3:  Encoding işlemlerini gerçekleştiriniz.
 cat_cols, num_cols, cat_but_car = grab_col_names(df)
@@ -259,38 +278,34 @@ df = one_hot_encoder(df, cat_cols, drop_first=True)
 df.shape
 
 # Adım 4: Numerik değişkenler için standartlaştırma yapınız.
-num_cols=[col for col in num_cols if col not in ["CustomerSatisfactionScore","BookingDate","DepartureDate"]]
+num_cols = [col for col in num_cols if col not in ["CustomerSatisfactionScore", "BookingDate", "DepartureDate"]]
 ss = StandardScaler()
 df[num_cols] = ss.fit_transform(df[num_cols])
 
 # Adım 4: Model oluşturunuz.
 # Bağımsız değişkenler ve hedef değişken
 y = df["CustomerSatisfactionScore"]
-X = df.drop(["CustomerSatisfactionScore","StarSystem","BookingDate","DepartureDate"], axis=1 )
-X_train, X_test, y_train, y_test = train_test_split(X,y, test_size=0.2,random_state=22)
-
-
+X = df.drop(["CustomerSatisfactionScore", "StarSystem", "BookingDate", "DepartureDate"], axis=1)
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=22)
 
 # Modelleri oluşturma
-models = [#('LR', LinearRegression()),
-          #("Ridge", Ridge()),
-          #("Lasso", Lasso()),
-          #("ElasticNet", ElasticNet()),
-          #('KNN', KNeighborsRegressor()),
-          ('CART', DecisionTreeRegressor()),
-          ('RF', RandomForestRegressor()),
-          #('SVR', SVR()),
-          #('GBM', GradientBoostingRegressor()),
-          #("XGBoost", XGBRegressor(objective='reg:squarederror')),
-          ("LightGBM", LGBMRegressor(verbosity=-1)),
-          ("CatBoost", CatBoostRegressor(verbose=False))]
-
+models = [  # ('LR', LinearRegression()),
+    # ("Ridge", Ridge()),
+    # ("Lasso", Lasso()),
+    # ("ElasticNet", ElasticNet()),
+    # ('KNN', KNeighborsRegressor()),
+    ('CART', DecisionTreeRegressor()),
+    # ('RF', RandomForestRegressor()),
+    # ('SVR', SVR()),
+    # ('GBM', GradientBoostingRegressor()),
+    # ("XGBoost", XGBRegressor(objective='reg:squarederror')),
+    ("LightGBM", LGBMRegressor(verbosity=-1)),
+    ("CatBoost", CatBoostRegressor(verbose=False))]
 
 # Her bir model için performansı değerlendirme
 for name, regressor in models:
     rmse = np.mean(np.sqrt(-cross_val_score(regressor, X, y, cv=5, scoring="neg_mean_squared_error")))
     print(f"RMSE: {round(rmse, 4)} ({name}) ")
-
 
 ######################################################
 #  Automated Hyperparameter Optimization
@@ -308,18 +323,24 @@ gbm_params = {"learning_rate": [0.01, 0.1],
               "n_estimators": [500, 1000],
               "subsample": [1, 0.5, 0.7]}
 
+xgboost_params = {
+    'learning_rate': [0.1, 0.2],
+    'max_depth': [None, 5],
+    'n_estimators': [100, 200]
+}
+
 lightgbm_params = {"learning_rate": [0.01, 0.1],
                    "n_estimators": [300, 500],
                    "colsample_bytree": [0.7, 1]}
 
-catboost_params = {"iterations": [200, 500],
-                   "learning_rate": [0.01, 0.1],
-                   "depth": [3, 6]}
+catboost_params = {"learning_rate": [0.1, 0.5],
+                   'n_estimators': [500,1500],
+                   "depth": [4, 6]}
 
 
-regressors = [("CART",DecisionTreeRegressor(),cart_params),
+regressors = [("CART", DecisionTreeRegressor(), cart_params),
               ("RF", RandomForestRegressor(), rf_params),
-              #('GBM', GradientBoostingRegressor(), gbm_params),
+              # ('GBM', GradientBoostingRegressor(), gbm_params),
               ("CatBoost", CatBoostRegressor(verbose=False), catboost_params),
               ('LightGBM', LGBMRegressor(verbosity=-1), lightgbm_params)]
 
@@ -341,30 +362,31 @@ for name, regressor, params in regressors:
     best_models[name] = final_model
 
 ###########################################################################
-lightgbm_model = LGBMRegressor(verbosity=-1).fit(X_train,y_train)
-rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_model, X,y, cv=10, scoring="neg_mean_squared_error")))
+lightgbm_model = LGBMRegressor(verbosity=-1).fit(X_train, y_train)
+rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_model, X, y, cv=10, scoring="neg_mean_squared_error")))
 print(f"Lightgbm Model RMSE: {round(rmse, 4)} ")
-
 
 y_pred = lightgbm_model.predict(X_test)
 r2 = mt.r2_score(y_test, y_pred)
 print(f"LightGBM Model R2: {round(r2, 4)} ")
 
-#LightGBM Hiperparametre optimizasyonu
+# LightGBM Hiperparametre optimizasyonu
 
 lightgbm_params = {"learning_rate": [0.01, 0.1],
-                    "n_estimators": [300, 500],
-                    "colsample_bytree": [0.7, 1]}
+                   "n_estimators": [300, 500],
+                   "colsample_bytree": [0.7, 1]}
 
-grid_search = GridSearchCV(lightgbm_model,lightgbm_params,cv=5 , n_jobs=-1,verbose=True).fit(X_train,y_train)
+grid_search = GridSearchCV(lightgbm_model, lightgbm_params, cv=5, n_jobs=-1, verbose=True).fit(X_train, y_train)
 lightgbm_final = lightgbm_model.set_params(**grid_search.best_params_)
 rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_final, X_test, y_test, cv=10, scoring="neg_mean_squared_error")))
 print(f"Lightgbm Final Model RMSE: {round(rmse, 4)} ")
+
+
 ###########################################################################
 def plot_importance(model, features, num=20, save=False):
-
     if not hasattr(model, 'feature_importances_'):
-        raise AttributeError(f"The model does not have feature importances. Ensure that the model is fitted and has the attribute 'feature_importances_'.")
+        raise AttributeError(
+            f"The model does not have feature importances. Ensure that the model is fitted and has the attribute 'feature_importances_'.")
 
     feature_imp = pd.DataFrame({'Value': model.feature_importances_, 'Feature': features.columns})
 
@@ -381,6 +403,7 @@ def plot_importance(model, features, num=20, save=False):
         plt.savefig('importances.png')
     plt.show()
 
+
 plot_importance(lightgbm_model, X_train)
 
 #################################################
@@ -388,12 +411,10 @@ plot_importance(lightgbm_model, X_train)
 
 hatalar = y_test - y_pred
 
-plt.scatter(y_pred, hatalar,color="Red")
+plt.scatter(y_pred, hatalar, color="Red")
 plt.xlabel('Tahmin Edilen Değerler')
 plt.ylabel('Hatalar')
 plt.title('Hata Çizimi')
-plt.axhline(0,color="Blue",linestyle="--")
+plt.axhline(0, color="Blue", linestyle="--")
 plt.show()
 ########
-
-
