@@ -238,7 +238,6 @@ def base_models(X,y):
 
 # Hyperparameter Optimization
 
-# config.py
 
 knn_params={"n_neighbors":range(2,50)}
 
@@ -290,7 +289,6 @@ def hyperparameter_optimization(X, y, cv=5):
     return best_models
 
 
-# Stacking & Ensemble Learning
 # Stacking & Ensemble Learning
 def voting_regressor(best_models,X,y):
     print("Voting Regressor...")
