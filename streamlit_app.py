@@ -7,7 +7,7 @@ from Func import *
 
 
 def main():
-    # Arka plan resmini yüklemek için dosya adını belirtin
+    # Arka plan resmini yüklemek için dosya adını belirtme
     set_bg_hack('background_images/background.jpg')
 
     # sidebar için arkaplan resmi
@@ -116,6 +116,7 @@ def main():
     # Rezervasyon Ayı
     Month = st.sidebar.slider("Booking Month: ", 1, 12, step=1)
 
+    # Girilen Inputların Kaydı
     data = {
         "Age": int(Age),
         "Gender": Gender,
@@ -138,7 +139,7 @@ def main():
     df_new = pd.DataFrame.from_dict([data])
     st.dataframe(df_new)
 
-
+    # Girilen inputların model sonuçlarını alma
     if st.sidebar.button("PREDICT"):
 
         df = pd.read_csv("datasets/interstellar_travel.csv")
@@ -146,14 +147,17 @@ def main():
         df = pd.concat([df, df_new], ignore_index=True)
         X, y = interstellar_data_prep(df)
 
+        # Inputun Modele Hazırlanması
         df_new = X.iloc[-1]
-
         df_new = [float(val) if idx < 8 else int(val) for idx, val in enumerate(df_new)]
+
         # Input Verilerinden Tek Satırlık DataFrame Oluşturma
         np_list = np.array(df_new).reshape(1, -1)
         new_df = pd.DataFrame(np_list)
+
         model = pickle.load(open("lightgbm_model.pkl", "rb"))
         prediction = model.predict(new_df)
+        
         with st.spinner("Tahmin yapılıyor..."):
             result_message = "The estimated satisfaction score is {}.".format(prediction[0])
             st.write(
