@@ -157,7 +157,7 @@ def main():
 
         model = pickle.load(open("lightgbm_model.pkl", "rb"))
         prediction = model.predict(new_df)
-        
+
         with st.spinner("Tahmin yapılıyor..."):
             result_message = "The estimated satisfaction score is {}.".format(prediction[0])
             st.write(
