@@ -1,7 +1,11 @@
+import base64
+
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+import streamlit as st
+import re
 
 def check_df(dataframe, head=5):
     print("##### Shape #####")
@@ -159,3 +163,265 @@ def plot_importance(model, features, num=20, save=False):
     # Show the plot
     plt.show()
 
+# Veri setini modele sokmadan önce yapılması gereken ön işlemler (EDA vb.)
+def interstellar_data_prep(dataframe):
+
+    # Değişken isimlerini düzeltme
+    dataframe = dataframe.rename(columns=lambda x: re.sub('[^A-Za-z0-9_]+', '', x))
+
+    # Tarih değişkenlerini datetime formatına getirme
+    dataframe["BookingDate"] = pd.to_datetime(dataframe["BookingDate"], format="%Y-%m-%d")
+    dataframe["DepartureDate"] = pd.to_datetime(dataframe["DepartureDate"], format="%Y-%m-%d")
+
+    # Price'ı 0'dan küçük olan satırlar var.
+    dataframe = dataframe[dataframe['PriceGalacticCredits'] > 0]
+
+    # Kategorik ve numerik değişkenleri çekme
+    cat_cols, num_cols, cat_but_car = grab_col_names(dataframe)
+
+    # Aykırı(Outlier) değerler için gerekli işlemler
+    for col in num_cols:
+        if col != "CustomerSatisfactionScore":
+            replace_with_thresholds(dataframe, col)
+
+    # Eksik değerleri doldurma
+    dataframe["SpecialRequests"].fillna("None", inplace=True)
+
+    # Yeni Değişkenler Oluşturma
+
+    # Kaldığı gece üzerinden olan verileri kaldığı gün olarak değiştirme işlemi.
+    dataframe["DurationofStayEarthDays"] = dataframe["DurationofStayEarthDays"].apply(lambda x: x + 1)
+
+    dataframe["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"] = dataframe["DepartureDate"] - dataframe["BookingDate"]
+    dataframe["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"] = dataframe["NEW_TOTAL_DAYS_BOOKING_TO_DEPARTURE"].dt.days
+
+    dataframe["NEW_COST_PRICE_TO_DISTANCE"] = dataframe["PriceGalacticCredits"] / dataframe["DistancetoDestinationLightYears"].replace(0,
+                                                                                                                  0.01)
+    dataframe["NEW_COST_PRICE_TO_STAY"] = dataframe["PriceGalacticCredits"] / dataframe["DurationofStayEarthDays"].replace(0, 1)
+    dataframe["NEW_COST_PRICE_TO_COMPANIONS"] = dataframe["PriceGalacticCredits"] / dataframe["NumberofCompanions"].replace(0, 1)
+
+    dataframe["DepartureYear"] = dataframe["DepartureDate"].dt.year
+    dataframe["BookingYear"] = dataframe["BookingDate"].dt.year
+
+    dataframe["Destination"] = dataframe['Destination'].apply(lambda x: 'Exotic' if 'Exotic' in x else x)
+
+    dataframe.loc[(dataframe['Age'] < 15), 'NEW_AGE_CAT'] = "children"
+    dataframe.loc[(dataframe['Age'] >= 15) & (dataframe['Age'] < 25), 'NEW_AGE_CAT'] = "young"
+    dataframe.loc[(dataframe['Age'] >= 25) & (dataframe['Age'] < 40), 'NEW_AGE_CAT'] = "mature"
+    dataframe.loc[(dataframe['Age'] >= 40) & (dataframe['Age'] < 65), 'NEW_AGE_CAT'] = "middle_age"
+    dataframe.loc[(dataframe['Age'] >= 65), 'NEW_AGE_CAT'] = "senior"
+
+    # Age x Gender
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "children") & (dataframe['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "children_male"
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "children") & (dataframe['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "children_female"
+
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "young") & (dataframe['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "young_male"
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "young") & (dataframe['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "young_female"
+
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "mature") & (dataframe['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "mature_male"
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "mature") & (dataframe['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "mature_female"
+
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "middle_age") &
+           (dataframe['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "middle_age_male"
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "middle_age") &
+           (dataframe['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "middle_age_female"
+
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "senior") &
+           (dataframe['Gender'] == "Male"), 'NEW_AGE_GENDER'] = "senior_male"
+    dataframe.loc[(dataframe['NEW_AGE_CAT'] == "senior") &
+           (dataframe['Gender'] == "Female"), 'NEW_AGE_GENDER'] = "senior_female"
+
+    # Gender x Occupation
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "male_colonist"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Colonist"), 'NEW_OCCUPATION_GENDER'] = "female_colonist"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "male_tourist"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Tourist"), 'NEW_OCCUPATION_GENDER'] = "female_tourist"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "male_businessperson"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Businessperson"), 'NEW_OCCUPATION_GENDER'] = "female_businessperson"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "male_explorer"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Explorer"), 'NEW_OCCUPATION_GENDER'] = "female_explorer"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "male_scientist"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Scientist"), 'NEW_OCCUPATION_GENDER'] = "female_scientist"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "male_other"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['Occupation'] == "Other"), 'NEW_OCCUPATION_GENDER'] = "female_other"
+
+    # TravelClass x TransportationType
+    dataframe['NEW_CLASS_TRANSPORTATION'] = dataframe['TravelClass'].str.cat(dataframe['TransportationType'], sep='_')
+    dataframe['NEW_CLASS_TRANSPORTATION'] = dataframe['NEW_CLASS_TRANSPORTATION'].str.lower()
+    dataframe['NEW_CLASS_TRANSPORTATION'] = dataframe['NEW_CLASS_TRANSPORTATION'].str.replace(" ", "_")
+
+    # LoyaltyProgramMember x Gender
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "male_loyal"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['LoyaltyProgramMember'] == "Yes"), 'NEW_CUSTOMER_GENDER'] = "female_loyal"
+
+    dataframe.loc[(dataframe['Gender'] == "Male") &
+           (dataframe['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "male_unloyal"
+    dataframe.loc[(dataframe['Gender'] == "Female") &
+           (dataframe['LoyaltyProgramMember'] == "No"), 'NEW_CUSTOMER_GENDER'] = "female_unloyal"
+
+    # LoyaltyProgramMember x PurposeofTravel
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "Yes") & (
+            dataframe["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_loyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "Yes") & (
+            dataframe["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_loyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "Yes") & (
+            dataframe["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_loyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "Yes") & (
+            dataframe["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_loyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "Yes") & (
+            dataframe["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_loyal"
+
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "No") & (
+            dataframe["PurposeofTravel"] == "Business"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "business_unloyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "No") & (
+            dataframe["PurposeofTravel"] == "Tourism"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "tourism_unloyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "No") & (
+            dataframe["PurposeofTravel"] == "Research"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "research_unloyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "No") & (
+            dataframe["PurposeofTravel"] == "Colonization"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "colonization_unloyal"
+    dataframe.loc[(dataframe['LoyaltyProgramMember'] == "No") & (
+            dataframe["PurposeofTravel"] == "Other"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] = "other_unloyal"
+
+    # NEW_CUSTOMER_PURPOSE_OF_TRAVEL x Gender
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_loyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_loyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_loyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_loyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_loyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_loyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_loyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_loyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_loyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_loyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "business_unloyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "business_unloyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "tourism_unloyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "tourism_unloyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "research_unloyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "research_unloyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "colonization_unloyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "colonization_unloyal_female"
+
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (
+            dataframe['Gender'] == "Male"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_male"
+    dataframe.loc[(dataframe['NEW_CUSTOMER_PURPOSE_OF_TRAVEL'] == "other_unloyal") & (
+            dataframe['Gender'] == "Female"), 'NEW_CUSTOMER_PURPOSE_OF_TRAVEL_GENDER'] = "other_unloyal_female"
+
+    # Son güncel değişken türlerimi tutuyorum.
+    cat_cols, num_cols, cat_but_car = grab_col_names(dataframe)
+
+    # Encoding işlemleri
+    dataframe = one_hot_encoder(dataframe, cat_cols, drop_first=True)
+
+    # Standartlaştırma
+    num_cols = [col for col in num_cols if col not in ["CustomerSatisfactionScore", "BookingDate", "DepartureDate"]]
+    ss = StandardScaler()
+    dataframe[num_cols] = ss.fit_transform(dataframe[num_cols])
+
+    # Bağımsız değişkenler ve hedef değişken
+    y = dataframe["CustomerSatisfactionScore"]
+    X = dataframe.drop(["CustomerSatisfactionScore", "StarSystem", "BookingDate", "DepartureDate"], axis=1)
+
+    return X,y
+
+##### Streamlit için kullanılan fonksiyonlar ###
+
+
+# Arka plan resmini eklemek için HTML kullanımı
+def set_bg_hack(main_bg, width='100%', height='100%'):
+    '''
+    A function to unpack an image from root folder and set as bg.
+
+    Parameters
+    ----------
+    main_bg : str
+        The filename of the background image.
+    width : str, optional
+        The width of the background image. Defaults to '100%'.
+    height : str, optional
+        The height of the background image. Defaults to 'auto'.
+
+    Returns
+    -------
+    The background.
+    '''
+    # set bg name
+    main_bg_ext = "png"
+
+    st.markdown(
+        f"""
+         <style>
+         .stApp {{
+             background: url(data:image/{main_bg_ext};base64,{base64.b64encode(open(main_bg, "rb").read()).decode()});
+             background-size: cover;
+             background-position: center;
+             background-repeat: no-repeat;
+             width: {width};
+             height: {height};
+         }}
+         </style>
+         """,
+        unsafe_allow_html=True
+    )
+
+# Sidebar arkaplan resmini yüklemek için
+def sidebar_bg(side_bg):
+    side_bg_ext = 'png'
+
+    st.markdown(
+        f"""
+        <style>
+        [data-testid="stSidebar"] > div:first-child {{
+            background: url(data:image/{side_bg_ext};base64,{base64.b64encode(open(side_bg, "rb").read()).decode()});
+            background-size: contain; /* Resmin orijinal boyutunu korur */
+            background-repeat: no-repeat; /* Resmin tek sefer yüklenmesini sağlar */
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True
+    )

@@ -363,7 +363,7 @@ for name, regressor, params in regressors:
 
 ###########################################################################
 lightgbm_model = LGBMRegressor(verbosity=-1).fit(X_train, y_train)
-rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_model, X, y, cv=10, scoring="neg_mean_squared_error")))
+rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_model, X, y, cv=5, scoring="neg_mean_squared_error")))
 print(f"Lightgbm Model RMSE: {round(rmse, 4)} ")
 
 y_pred = lightgbm_model.predict(X_test)
@@ -378,10 +378,14 @@ lightgbm_params = {"learning_rate": [0.01, 0.1],
 
 grid_search = GridSearchCV(lightgbm_model, lightgbm_params, cv=5, n_jobs=-1, verbose=True).fit(X_train, y_train)
 lightgbm_final = lightgbm_model.set_params(**grid_search.best_params_)
-rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_final, X_test, y_test, cv=10, scoring="neg_mean_squared_error")))
+rmse = np.mean(np.sqrt(-cross_val_score(lightgbm_final, X_test, y_test, cv=5, scoring="neg_mean_squared_error")))
 print(f"Lightgbm Final Model RMSE: {round(rmse, 4)} ")
 
-
+#### Streamlitte kullanılacak olan model
+import pickle
+with open("lightgbm_model.pkl", "wb") as f:
+    pickle.dump(lightgbm_final, f)
+    
 ###########################################################################
 def plot_importance(model, features, num=20, save=False):
     if not hasattr(model, 'feature_importances_'):
