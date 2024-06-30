@@ -35,9 +35,15 @@ def main():
     # Cinsiyet
     Gender = st.sidebar.radio("Gender", ["Male", "Female"])
 
+    # Yeni değişkenler oluşturacağımız için veri setinde olmayan değişkenler yaratmamak için koşul koyma
+    # Female Scientist,Female Explorer,Male Colonist veri setinde yok
+    if Gender == 'Female':
+        occupation_options = ['Tourist', 'Colonist', 'Businessperson', 'Other']
+    else:
+        occupation_options = ['Tourist', 'Explorer', 'Businessperson', 'Scientist', 'Other']
+
     # Meslek
-    Occupation = st.sidebar.selectbox('Occupation',
-                                      ['Tourist', 'Explorer', 'Colonist', 'Businessperson', 'Scientist', 'Other'])
+    Occupation = st.sidebar.selectbox('Occupation', occupation_options)
 
     # Seyahat Sınıfı
     TravelClass = st.sidebar.selectbox('Travel Class', ['Luxury', 'Economy', 'Business'])
