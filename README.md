@@ -62,9 +62,9 @@ Catboost and LightGBM models outperformed other models with the lowest RMSE and 
 # Visualizations
   
 Below are some key visualizations from the analysis:  
-   - Customer Satisfaction Distribution  
-   - Feature Importance  
-   - Model Performance Comparison  
+  - Customer Satisfaction Distribution  
+  - Feature Importance  
+  - Model Performance Comparison  
  
 # 6. Conclusion
 
@@ -73,18 +73,18 @@ The Interstellar Space Travel project successfully developed a predictive model 
 
 Future work will focus on:
 
-    - Expanding the dataset to include more diverse customer experiences.  
-    - Improving the predictive models with advanced techniques such as deep learning.  
-    - Integrating real-time feedback systems to continuously monitor and enhance customer satisfaction.  
+  - Expanding the dataset to include more diverse customer experiences.  
+  - Improving the predictive models with advanced techniques such as deep learning.  
+  - Integrating real-time feedback systems to continuously monitor and enhance customer satisfaction.  
 
 # 8. Acknowledgements
 
 We would like to thank all the participants who provided valuable feedback and data for this project. Special thanks to the development teams for their hard work and dedication. We also acknowledge Kaggle for providing the dataset used in this project.
 # 9. Contact Information
   
-Gamze Öğütcü: https://www.linkedin.com/in/gamzeogutcu/
-Eray Yumuşak: https://www.linkedin.com/in/eray-yumusak/
-Yasin Akkök: https://www.linkedin.com/in/yasin-akk%C3%B6k-885515269/
+- Gamze Öğütcü: https://www.linkedin.com/in/gamzeogutcu/  
+- Eray Yumuşak: https://www.linkedin.com/in/eray-yumusak/  
+- Yasin Akkök: https://www.linkedin.com/in/yasin-akk%C3%B6k-885515269/  
 
 # Streamlit Application  
 https://interstellarspacetravel.streamlit.app/
