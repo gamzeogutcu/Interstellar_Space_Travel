@@ -7,9 +7,9 @@ Interstellar travel has long captured the imagination of humanity. With technolo
 The primary objective of this project is to understand and predict the Customer Satisfaction Score, a key indicator of service quality and customer experience in interstellar tourism. This score is crucial for future service improvements and customer loyalty strategies.  
 # 3. Technologies Used  
   
-    Pycharm: For development and coding.  
-    Colab: For collaborative coding and data analysis.  
-    Streamlit: For creating interactive web applications.  
+    - Pycharm: For development and coding.  
+    - Colab: For collaborative coding and data analysis.  
+    - Streamlit: For creating interactive web applications.  
   
 # 4. Methodology  
 # Data Collection  
@@ -23,15 +23,15 @@ Data preprocessing involved several steps to ensure the data was clean and suita
 Exploratory Data Analysis (EDA)
 
 Exploratory Data Analysis (EDA) was performed to understand the underlying patterns and relationships in the data. The key steps involved were:  
-    -Descriptive Statistics: Summarizing the main characteristics of the dataset.  
-    -Distribution Analysis: Examining the distribution of customer satisfaction scores.  
-    -Correlation Analysis: Identifying relationships between different variables.  
-    -Visualization: Creating various plots to illustrate the data, such as histograms, box plots, and scatter plots.  
-    -Outlier Analysis: Identifying and handling anomalies in the data using IQR (Interquartile Range) technique. This step helped in improving the model's accuracy by focusing on the relevant data.  
-    -Missing value analysis: identifying and determining how to handle empty or missing values within a dataset to ensure accurate modeling and analysis.  
-    -Creating new features: deriving new information or features from existing variables within a dataset.  
-    -Encoding: process of converting categorical or text data into a numerical format suitable for machine learning algorithms or other analytical methods.  
-    -Normalization: Normalizing the data to bring all variables to a similar scale.  
+   - Descriptive Statistics: Summarizing the main characteristics of the dataset.  
+   - Distribution Analysis: Examining the distribution of customer satisfaction scores.  
+   - Correlation Analysis: Identifying relationships between different variables.  
+   - Visualization: Creating various plots to illustrate the data, such as histograms, box plots, and scatter plots.  
+   - Outlier Analysis: Identifying and handling anomalies in the data using IQR (Interquartile Range) technique. This step helped in improving the model's accuracy by focusing on the relevant data.  
+   - Missing value analysis: identifying and determining how to handle empty or missing values within a dataset to ensure accurate modeling and analysis.  
+   - Creating new features: deriving new information or features from existing variables within a dataset.  
+   - Encoding: process of converting categorical or text data into a numerical format suitable for machine learning algorithms or other analytical methods.  
+   - Normalization: Normalizing the data to bring all variables to a similar scale.  
 
 #Model Development  
     
@@ -62,9 +62,9 @@ Catboost and LightGBM models outperformed other models with the lowest RMSE and 
 # Visualizations
   
 Below are some key visualizations from the analysis:  
-  - Customer Satisfaction Distribution  
-  - Feature Importance  
-  - Model Performance Comparison  
+   - Customer Satisfaction Distribution  
+   - Feature Importance  
+   - Model Performance Comparison  
  
 # 6. Conclusion
 
