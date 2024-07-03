@@ -7,9 +7,9 @@ Interstellar travel has long captured the imagination of humanity. With technolo
 The primary objective of this project is to understand and predict the Customer Satisfaction Score, a key indicator of service quality and customer experience in interstellar tourism. This score is crucial for future service improvements and customer loyalty strategies.  
 # 3. Technologies Used  
   
-    - Pycharm: For development and coding.  
-    - Colab: For collaborative coding and data analysis.  
-    - Streamlit: For creating interactive web applications.  
+   - Pycharm: For development and coding.  
+   - Colab: For collaborative coding and data analysis.  
+   - Streamlit: For creating interactive web applications.  
   
 # 4. Methodology  
 # Data Collection  
@@ -33,7 +33,7 @@ Exploratory Data Analysis (EDA) was performed to understand the underlying patte
    - Encoding: process of converting categorical or text data into a numerical format suitable for machine learning algorithms or other analytical methods.  
    - Normalization: Normalizing the data to bring all variables to a similar scale.  
 
-#Model Development  
+# Model Development  
     
 Several machine learning models were developed to predict customer satisfaction scores. These models included:    
     
