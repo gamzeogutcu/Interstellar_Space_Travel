@@ -23,7 +23,6 @@ Data preprocessing involved several steps to ensure the data was clean and suita
 Exploratory Data Analysis (EDA)
 
 Exploratory Data Analysis (EDA) was performed to understand the underlying patterns and relationships in the data. The key steps involved were:  
-  
     -Descriptive Statistics: Summarizing the main characteristics of the dataset.  
     -Distribution Analysis: Examining the distribution of customer satisfaction scores.  
     -Correlation Analysis: Identifying relationships between different variables.  
