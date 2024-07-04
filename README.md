@@ -17,11 +17,9 @@ The primary objective of this project is to understand and predict the Customer 
 The dataset was sourced from Kaggle, containing information from surveys and feedback from customers who have experienced interstellar travel. The complete dataset consists of approximately 500,000 samples. For this analysis, a subset of 50,000 samples was used. This data includes demographic information, travel details, and customer feedback.
 # Data Preprocessing & Exploratory Data Analysis (EDA)  
 Data preprocessing involved several steps to ensure the data was clean and suitable for analysis:
-   - Data Cleaning: Handling missing values and correcting any inconsistencies in the data.
+   - Data Cleaning: Correcting any inconsistencies in the data.
    - Type Conversions: Ensuring that all data types were appropriately converted (e.g., converting categorical variables to datetime formats).
-
-Exploratory Data Analysis (EDA)
-
+  
 Exploratory Data Analysis (EDA) was performed to understand the underlying patterns and relationships in the data. The key steps involved were:  
    - Descriptive Statistics: Summarizing the main characteristics of the dataset.  
    - Distribution Analysis: Examining the distribution of customer satisfaction scores.  
