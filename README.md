@@ -51,7 +51,7 @@ Several machine learning models were developed to predict customer satisfaction 
   - CatBoost  
   - Support Vector Machines (SVM)  
   
-Model Evaluation
+# Model Evaluation
   
 The models were evaluated using metrics such as Root Mean Squared Error (RMSE), Root Mean Squared Error (RMSE), and R-squared. 
 
@@ -67,6 +67,28 @@ RMSE values are as follows:
 - RMSE: 2.7618 (XGBoost) 
 - RMSE: 2.7204 (LightGBM) 
 - RMSE: 2.6482 (CatBoost)
+
+# Hyperparameter Optimization
+  
+To enhance the performance of the machine learning models, hyperparameter optimization was carried out. This process involves tuning the parameters of the models to achieve the best possible performance. The technique used for hyperparameter optimization included:  
+
+- Grid Search: An exhaustive search over a specified parameter grid.
+      
+Hyperparameter results for the top 3 Best-Performing Algorithms are as follows:  
+- XGBoost  
+RMSE (Before): 2.7618 (XGBoost)   
+RMSE  (After): 2.7353 (XGBoost)   
+XGBoost best params: {'learning_rate': 0.2, 'max_depth': None, 'n_estimators': 200}  
+
+- LightGBM  
+RMSE (Before): 2.7204 (LightGBM)   
+RMSE  (After): 2.6919 (LightGBM)   
+LightGBM best params: {'colsample_bytree': 1, 'learning_rate': 0.1, 'n_estimators': 300}  
+
+- CatBoost  
+RMSE (Before): 2.6482 (CatBoost)   
+RMSE  (After): 2.6259 (CatBoost)   
+CatBoost best params: {'depth': 4, 'learning_rate': 0.1, 'n_estimators': 1500}  
 # 5. Findings  
 # Predictive Model Performance
 
