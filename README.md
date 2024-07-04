@@ -67,7 +67,6 @@ RMSE values are as follows:
 - RMSE: 2.7618 (XGBoost) 
 - RMSE: 2.7204 (LightGBM) 
 - RMSE: 2.6482 (CatBoost)
-- 
 # 5. Findings  
 # Predictive Model Performance
 
