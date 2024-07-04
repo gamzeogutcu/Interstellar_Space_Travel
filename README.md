@@ -54,6 +54,20 @@ Several machine learning models were developed to predict customer satisfaction 
 Model Evaluation
   
 The models were evaluated using metrics such as Root Mean Squared Error (RMSE), Root Mean Squared Error (RMSE), and R-squared. 
+
+RMSE values are as follows:  
+- RMSE: 2.8047 (LR) 
+- RMSE: 2.8048 (Ridge) 
+- RMSE: 5.288 (Lasso) 
+- RMSE: 5.1343 (ElasticNet) 
+- RMSE: 4.1973 (KNN) 
+- RMSE: 4.3441 (CART) 
+- RMSE: 3.1172 (RF) 
+- RMSE: 3.0244 (GBM) 
+- RMSE: 2.7618 (XGBoost) 
+- RMSE: 2.7204 (LightGBM) 
+- RMSE: 2.6482 (CatBoost)
+- 
 # 5. Findings  
 # Predictive Model Performance
 
