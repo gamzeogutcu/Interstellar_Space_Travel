@@ -24,7 +24,10 @@ Exploratory Data Analysis (EDA) was performed to understand the underlying patte
    - Descriptive Statistics: Summarizing the main characteristics of the dataset.  
    - Distribution Analysis: Examining the distribution of customer satisfaction scores.  
    - Correlation Analysis: Identifying relationships between different variables.  
-   - Visualization: Creating various plots to illustrate the data, such as histograms, box plots, and scatter plots.  
+   - Visualization: Creating various plots to illustrate the data, such as histograms, box plots, and scatter plots.
+
+# Feature Engineering
+The steps of feature engineering involved were:  
    - Outlier Analysis: Identifying and handling anomalies in the data using IQR (Interquartile Range) technique. This step helped in improving the model's accuracy by focusing on the relevant data.  
    - Missing value analysis: identifying and determining how to handle empty or missing values within a dataset to ensure accurate modeling and analysis.  
    - Creating new features: deriving new information or features from existing variables within a dataset.  
